@@ -41,6 +41,22 @@ npm run dev
 
 Update your home page in `src/pages/index.astro`.
 
+## Visitor Globe (persistent data)
+
+This project supports persistent visitor points via Supabase.
+
+1. Create a Supabase project.
+2. Run SQL in `supabase/visitor_points.sql` in Supabase SQL editor.
+3. Set environment variables in deployment and local `.env`:
+
+```bash
+PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+If these are set, `VisitorMap` reads/writes from Supabase directly.
+If not set, it falls back to local sample points.
+
 
 ## CV & About
 

@@ -1,0 +1,450 @@
+---
+const fallbackVisitors = [
+  { city: "West Lafayette", country: "US", lat: 40.4259, lng: -86.9081, ts: "2026-02-21T15:00:00Z" },
+  { city: "Seattle", country: "US", lat: 47.6062, lng: -122.3321, ts: "2026-02-20T21:12:00Z" },
+  { city: "New York", country: "US", lat: 40.7128, lng: -74.006, ts: "2026-02-20T12:34:00Z" },
+  { city: "London", country: "GB", lat: 51.5072, lng: -0.1276, ts: "2026-02-19T17:45:00Z" },
+  { city: "Tokyo", country: "JP", lat: 35.6762, lng: 139.6503, ts: "2026-02-19T08:08:00Z" },
+  { city: "Singapore", country: "SG", lat: 1.3521, lng: 103.8198, ts: "2026-02-18T22:10:00Z" },
+];
+
+const pointsUrl = import.meta.env.PUBLIC_VISITOR_POINTS_URL ?? "";
+const ingestUrl = import.meta.env.PUBLIC_VISITOR_INGEST_URL ?? "";
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
+---
+
+<section id="visitors" class="animate space-y-3.5">
+  <div class="section-marker"></div>
+  <h2 class="section-title m-0">Visitor Map</h2>
+  <div class="space-y-2">
+    <div
+      id="visitor-globe-wrap"
+      class="relative w-full overflow-hidden rounded-xl border border-neutral-300/80 bg-neutral-100 p-1.5 dark:border-neutral-700/70 dark:bg-neutral-900"
+    >
+      <div id="visitor-stage" class="relative mx-auto aspect-square w-full max-w-[300px]">
+        <canvas id="visitor-globe" class="absolute inset-0 h-full w-full touch-none cursor-grab active:cursor-grabbing"></canvas>
+        <canvas id="visitor-overlay" class="pointer-events-none absolute inset-0 z-10 h-full w-full"></canvas>
+      </div>
+      <div
+        id="visitor-tooltip"
+        class="pointer-events-none absolute z-20 hidden max-w-[220px] rounded-md border border-neutral-300 bg-neutral-50/95 px-2 py-1 text-xs text-neutral-700 shadow-sm backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200"
+      ></div>
+    </div>
+    <button
+      id="visitor-open-btn"
+      class="inline-flex items-center gap-2 rounded-full border border-neutral-300 px-3 py-1 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+    >
+      Recent Visitors
+      <span id="visitor-count" class="rounded-full bg-neutral-200 px-2 py-0.5 text-xs dark:bg-neutral-700">0</span>
+    </button>
+  </div>
+</section>
+
+<dialog
+  id="visitor-dialog"
+  class="w-[min(560px,92vw)] rounded-xl border border-neutral-300 bg-neutral-50 p-0 text-neutral-800 backdrop:bg-black/25 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+>
+  <div class="flex items-center justify-between border-b border-neutral-300 px-4 py-3 dark:border-neutral-700">
+    <h3 class="text-base font-semibold">Recent Visitors</h3>
+    <button
+      id="visitor-close-btn"
+      class="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+    >
+      Close
+    </button>
+  </div>
+  <div class="p-4">
+    <ul id="visitor-list" class="space-y-2 text-sm text-neutral-600 dark:text-neutral-300"></ul>
+  </div>
+</dialog>
+
+<script
+  is:inline
+  data-astro-rerun
+  define:vars={{ fallbackVisitors, pointsUrl, ingestUrl, supabaseUrl, supabaseAnonKey }}
+>
+  const globeEl = document.getElementById("visitor-globe");
+  const overlayEl = document.getElementById("visitor-overlay");
+  const stageEl = document.getElementById("visitor-stage");
+  const globeWrapEl = document.getElementById("visitor-globe-wrap");
+  const tooltipEl = document.getElementById("visitor-tooltip");
+  const openBtn = document.getElementById("visitor-open-btn");
+  const closeBtn = document.getElementById("visitor-close-btn");
+  const dialogEl = document.getElementById("visitor-dialog");
+  const listEl = document.getElementById("visitor-list");
+  const countEl = document.getElementById("visitor-count");
+
+  const normalize = (item) => ({
+    city: item.city || "Unknown city",
+    country: item.country || "XX",
+    lat: Number(item.lat),
+    lng: Number(item.lng),
+    ts: item.ts || new Date().toISOString(),
+  });
+
+  const hasSupabase = !!supabaseUrl && !!supabaseAnonKey;
+
+  const supabaseHeaders = hasSupabase
+    ? {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        "Content-Type": "application/json",
+      }
+    : null;
+
+  const uniqueByLocation = (visitors) => {
+    const seen = new Set();
+    return visitors.filter((v) => {
+      const key = `${v.city}-${v.country}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  const formatTime = (ts) => {
+    const date = new Date(ts);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
+  const renderList = (visitors) => {
+    if (!listEl || !countEl) return;
+    const sorted = [...visitors].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+    const unique = uniqueByLocation(sorted);
+    countEl.textContent = String(unique.length);
+    listEl.innerHTML = unique
+      .slice(0, 7)
+      .map(
+        (v) =>
+          `<li class="flex items-center justify-between border-b border-neutral-300/60 pb-1 dark:border-neutral-700/60">
+            <span class="truncate">${v.city}, ${v.country}</span>
+            <span class="ml-3 shrink-0 text-neutral-500 dark:text-neutral-500">${formatTime(v.ts)}</span>
+          </li>`,
+      )
+      .join("");
+  };
+
+  const bindDialog = () => {
+    if (!openBtn || !closeBtn || !dialogEl) return;
+    if (openBtn.dataset.bound === "1") return;
+    openBtn.dataset.bound = "1";
+    openBtn.addEventListener("click", () => {
+      if (typeof dialogEl.showModal === "function") dialogEl.showModal();
+    });
+    closeBtn.addEventListener("click", () => {
+      if (typeof dialogEl.close === "function") dialogEl.close();
+    });
+    dialogEl.addEventListener("click", (event) => {
+      const rect = dialogEl.getBoundingClientRect();
+      const inDialog =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+      if (!inDialog && typeof dialogEl.close === "function") dialogEl.close();
+    });
+  };
+
+  const loadVisitors = async () => {
+    let visitors = fallbackVisitors.map(normalize);
+    if (hasSupabase && supabaseHeaders) {
+      try {
+        const url = `${supabaseUrl}/rest/v1/visitor_points?select=city,country,lat,lng,ts&order=ts.desc&limit=200`;
+        const res = await fetch(url, { headers: supabaseHeaders });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            visitors = data
+              .map(normalize)
+              .filter((v) => !Number.isNaN(v.lat) && !Number.isNaN(v.lng));
+          }
+        }
+      } catch {
+        // Fall back to static data if Supabase read fails.
+      }
+    } else if (pointsUrl) {
+      try {
+        const res = await fetch(pointsUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            visitors = data.map(normalize).filter((v) => !Number.isNaN(v.lat) && !Number.isNaN(v.lng));
+          }
+        }
+      } catch {
+        // Keep fallback data if endpoint is unavailable.
+      }
+    }
+
+    try {
+      const geoRes = await fetch("https://ipapi.co/json/");
+      if (geoRes.ok) {
+        const geo = await geoRes.json();
+        const current = normalize({
+          city: geo.city,
+          country: geo.country_code,
+          lat: geo.latitude,
+          lng: geo.longitude,
+          ts: new Date().toISOString(),
+        });
+        if (!Number.isNaN(current.lat) && !Number.isNaN(current.lng)) {
+          visitors = [current, ...visitors];
+          if (hasSupabase && supabaseHeaders) {
+            fetch(`${supabaseUrl}/rest/v1/visitor_points`, {
+              method: "POST",
+              headers: {
+                ...supabaseHeaders,
+                Prefer: "return=minimal",
+              },
+              body: JSON.stringify({
+                city: current.city,
+                country: current.country,
+                lat: current.lat,
+                lng: current.lng,
+                ts: current.ts,
+              }),
+            }).catch(() => {});
+          } else if (ingestUrl) {
+            fetch(ingestUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(current),
+            }).catch(() => {});
+          }
+        }
+      }
+    } catch {
+      // Ignore geo lookup failures.
+    }
+    return visitors;
+  };
+
+  const initGlobe = async (visitors) => {
+    if (!globeEl || !overlayEl || !stageEl) return;
+    try {
+      const { default: createGlobe } = await import("https://esm.sh/cobe@0.6.3?bundle");
+      let currentPhi = 0;
+      let currentTheta = 0.2;
+      let targetPhi = 0;
+      let targetTheta = 0.2;
+      let isDragging = false;
+      let pointerId = null;
+      let lastX = 0;
+      let lastY = 0;
+      const hitRadius = 16;
+      const globeRadiusFactor = 0.76;
+      const overlayCtx = overlayEl.getContext("2d");
+      let projectedPoints = [];
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const size = stageEl.clientWidth || 340;
+      globeEl.width = size * dpr;
+      globeEl.height = size * dpr;
+      overlayEl.width = size * dpr;
+      overlayEl.height = size * dpr;
+
+      const globe = createGlobe(globeEl, {
+        devicePixelRatio: dpr,
+        width: globeEl.width,
+        height: globeEl.height,
+        phi: 0,
+        theta: 0.2,
+        dark: 0,
+        diffuse: 1.2,
+        mapSamples: 12000,
+        mapBrightness: 5,
+        baseColor: [0.82, 0.82, 0.82],
+        markerColor: [0.2, 0.2, 0.2],
+        glowColor: [1, 1, 1],
+        markers: [],
+        onRender: (state) => {
+          if (!isDragging) {
+            targetPhi += 0.0025;
+          }
+          currentPhi += (targetPhi - currentPhi) * 0.12;
+          currentTheta += (targetTheta - currentTheta) * 0.12;
+          state.phi = currentPhi;
+          state.theta = currentTheta;
+          if (!overlayCtx) return;
+          const rect = stageEl.getBoundingClientRect();
+          const radius = (rect.width / 2) * globeRadiusFactor;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          projectedPoints = [];
+          overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          overlayCtx.clearRect(0, 0, rect.width, rect.height);
+          for (const v of visitors) {
+            const p = projectPoint(v.lat, v.lng, currentPhi, currentTheta, radius, cx, cy);
+            if (!p.visible) continue;
+            projectedPoints.push({ ...p, visitor: v });
+            overlayCtx.beginPath();
+            overlayCtx.fillStyle = "rgba(43,43,43,0.95)";
+            overlayCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            overlayCtx.fill();
+          }
+        },
+      });
+
+      const handleResize = () => {
+        const newSize = stageEl.clientWidth || 340;
+        globeEl.width = newSize * dpr;
+        globeEl.height = newSize * dpr;
+        overlayEl.width = newSize * dpr;
+        overlayEl.height = newSize * dpr;
+      };
+
+      const projectPoint = (latDeg, lngDeg, phi, theta, radius, cx, cy) => {
+        const lat = (latDeg * Math.PI) / 180;
+        // Small longitudinal calibration so projected points align with cobe's map texture.
+        const lngOffsetDeg = 90;
+        const lng = ((lngDeg + lngOffsetDeg) * Math.PI) / 180;
+        const cosLat = Math.cos(lat);
+        // Use z as "front-facing" axis so lng=0 starts near the center.
+        let x = cosLat * Math.sin(lng);
+        let y = Math.sin(lat);
+        let z = cosLat * Math.cos(lng);
+
+        const cosPhi = Math.cos(phi);
+        const sinPhi = Math.sin(phi);
+        const x1 = x * cosPhi + z * sinPhi;
+        const z1 = z * cosPhi - x * sinPhi;
+        x = x1;
+        z = z1;
+
+        const cosTheta = Math.cos(theta);
+        const sinTheta = Math.sin(theta);
+        const y1 = y * cosTheta - z * sinTheta;
+        const z2 = y * sinTheta + z * cosTheta;
+        y = y1;
+        z = z2;
+
+        return {
+          x: cx + x * radius,
+          y: cy - y * radius,
+          visible: z > 0,
+        };
+      };
+
+      const hideTooltip = () => {
+        if (!tooltipEl) return;
+        tooltipEl.classList.add("hidden");
+      };
+
+      const showTooltip = (visitor, x, y) => {
+        if (!tooltipEl || !globeWrapEl) return;
+        tooltipEl.innerHTML = `
+          <div class="font-medium">${visitor.city}, ${visitor.country}</div>
+          <div class="text-neutral-500 dark:text-neutral-400">${new Date(visitor.ts).toLocaleString()}</div>
+        `;
+        const wrapRect = globeWrapEl.getBoundingClientRect();
+        const left = Math.max(8, Math.min(x + 12, wrapRect.width - 220));
+        const top = Math.max(8, Math.min(y - 12, wrapRect.height - 54));
+        tooltipEl.style.left = `${left}px`;
+        tooltipEl.style.top = `${top}px`;
+        tooltipEl.classList.remove("hidden");
+      };
+
+      const onHover = (event) => {
+        if (!globeEl || !globeWrapEl || !tooltipEl || isDragging) {
+          hideTooltip();
+          return;
+        }
+        const rect = stageEl.getBoundingClientRect();
+        const localX = event.clientX - rect.left;
+        const localY = event.clientY - rect.top;
+        const radius = (rect.width / 2) * globeRadiusFactor;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+
+        const inGlobeCircle = (localX - cx) * (localX - cx) + (localY - cy) * (localY - cy) <= radius * radius;
+        if (!inGlobeCircle) {
+          hideTooltip();
+          return;
+        }
+
+        let best = null;
+        let bestDist = Infinity;
+        for (const p of projectedPoints) {
+          const dx = p.x - localX;
+          const dy = p.y - localY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = p;
+          }
+        }
+
+        if (best && bestDist <= hitRadius) {
+          showTooltip(best.visitor, best.x, best.y);
+        } else {
+          hideTooltip();
+        }
+      };
+
+      const onPointerDown = (event) => {
+        isDragging = true;
+        pointerId = event.pointerId;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        globeEl.setPointerCapture?.(pointerId);
+      };
+
+      const onPointerMove = (event) => {
+        if (!isDragging || event.pointerId !== pointerId) return;
+        const dx = event.clientX - lastX;
+        const dy = event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        targetPhi += dx * 0.01;
+        const nextTheta = targetTheta - dy * 0.006;
+        targetTheta = Math.max(-0.6, Math.min(0.6, nextTheta));
+      };
+
+      const onPointerUp = (event) => {
+        if (event.pointerId !== pointerId) return;
+        isDragging = false;
+        globeEl.releasePointerCapture?.(pointerId);
+        pointerId = null;
+      };
+
+      window.addEventListener("resize", handleResize);
+      globeEl.addEventListener("pointermove", onHover);
+      globeEl.addEventListener("pointerdown", onPointerDown);
+      globeEl.addEventListener("pointermove", onPointerMove);
+      globeEl.addEventListener("pointerup", onPointerUp);
+      globeEl.addEventListener("pointercancel", onPointerUp);
+      globeEl.addEventListener("pointerleave", (event) => {
+        onPointerUp(event);
+        hideTooltip();
+      });
+
+      document.addEventListener("astro:before-swap", () => {
+        window.removeEventListener("resize", handleResize);
+        globeEl.removeEventListener("pointermove", onHover);
+        globeEl.removeEventListener("pointerdown", onPointerDown);
+        globeEl.removeEventListener("pointermove", onPointerMove);
+        globeEl.removeEventListener("pointerup", onPointerUp);
+        globeEl.removeEventListener("pointercancel", onPointerUp);
+        globeEl.removeEventListener("pointerleave", onPointerUp);
+        globe.destroy();
+      });
+    } catch {
+      if (listEl) {
+        listEl.insertAdjacentHTML(
+          "afterbegin",
+          `<li class="text-neutral-500 dark:text-neutral-400">Globe render unavailable in this browser.</li>`,
+        );
+      }
+    }
+  };
+
+  const run = async () => {
+    bindDialog();
+    const visitors = await loadVisitors();
+    renderList(visitors);
+    await initGlobe(visitors);
+  };
+
+  run();
+</script>

@@ -5,7 +5,14 @@
 html {
   overflow-y: auto;
   color-scheme: light;
+  scroll-behavior: smooth;
   scroll-padding-top: 100px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 html.dark {
@@ -20,22 +27,31 @@ body {
 body {
   @apply font-sans antialiased;
   @apply flex flex-col;
-  @apply bg-neutral-300 dark:bg-slate-900;
+  @apply bg-neutral-100 dark:bg-slate-900;
   @apply text-black/75 dark:text-white/75;
 }
 
 header {
-  @apply fixed left-0 right-0 top-0 z-50 py-6;
-  @apply bg-neutral-100/75 dark:bg-neutral-900/75;
+  @apply fixed left-0 right-0 top-0 z-50 py-3;
+  @apply border-b border-neutral-300/80 dark:border-neutral-600/30;
+  @apply bg-neutral-100/95 dark:bg-neutral-900/90;
   @apply saturate-200 backdrop-blur-sm;
 }
 
 main {
-  @apply flex-1 py-32;
+  @apply flex-1 pt-24 pb-2 md:pt-28 md:pb-4;
 }
 
 footer {
-  @apply py-6 text-sm;
+  @apply py-4 text-sm;
+}
+
+.section-marker {
+  @apply h-2 w-20 rounded-sm bg-gradient-to-r from-neutral-500 to-neutral-700 dark:from-neutral-400 dark:to-neutral-600;
+}
+
+.section-title {
+  @apply text-2xl font-bold tracking-tight text-black dark:text-white;
 }
 
 article {

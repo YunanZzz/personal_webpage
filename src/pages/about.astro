@@ -1,9 +1,9 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "@layouts/Layout.astro";
 import Container from "@components/Container.astro";
 import { ABOUT } from "@consts";
 import Image from "astro/components/Image.astro";
+import { PROFILE } from "@data/profile";
 ---
 
 <Layout title={ABOUT.TITLE} description={ABOUT.DESCRIPTION}>
@@ -14,37 +14,35 @@ import Image from "astro/components/Image.astro";
           About
         </div>
         <section class="animate not-prose flex flex-col gap-4 text-justify">
-          <p class="text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores porro hic minima incidunt explicabo obcaecati consectetur consequuntur at quisquam commodi.
-          </p>      
-          
-          <p class="text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores porro hic minima incidunt explicabo obcaecati consectetur consequuntur at quisquam commodi.
-          </p>
+          {PROFILE.about.paragraphs.map((paragraph) => (
+            <p class="text-justify">{paragraph}</p>
+          ))}
         </section>
 
         <div class="flex flex-col md:flex-row justify-center">
           <div class="my-10 text-center">
-            <div class="bg-neutral-300 w-[350px] h-[250px] object-cover rounded-xl -rotate-6 overflow-hidden">
+            <div class={PROFILE.about.photos[0].className}>
               <Image
-                src={'/astro-nano.png'}
-                alt={'life2'}
-                width={350}
-                height={250}
+                src={PROFILE.about.photos[0].src}
+                alt={PROFILE.about.photos[0].alt}
+                width={PROFILE.about.photos[0].width}
+                height={PROFILE.about.photos[0].height}
                 class="w-[350px] h-[250px] object-cover rounded-xl overflow-hidden"
               />
             </div>
-            <p class="mt-4 text-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit. </p>
+            <p class="mt-4 text-sm">{PROFILE.about.photos[0].caption}</p>
           </div>
           <div class="mx-10 my-10 text-center">
-            <div class="bg-neutral-300 w-[150px] h-[250px] object-cover rounded-xl rotate-6 mx-auto sm:ml-auto">
+            <div class={PROFILE.about.photos[1].className}>
               <Image
-                src={'/astro-micro.jpg'}
-                alt={'life2'}
-                width={150}
-                height={250}
+                src={PROFILE.about.photos[1].src}
+                alt={PROFILE.about.photos[1].alt}
+                width={PROFILE.about.photos[1].width}
+                height={PROFILE.about.photos[1].height}
                 class="w-[150px] h-[250px] object-cover rounded-xl "
               />
             </div>
-            <p class="mt-4 text-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            <p class="mt-4 text-sm">{PROFILE.about.photos[1].caption}</p>
           </div>
         </div>
       </div>

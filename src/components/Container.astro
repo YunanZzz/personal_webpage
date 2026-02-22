@@ -1,5 +1,12 @@
 ---
+export interface Props {
+  wide?: boolean;
+}
+
+const { wide = false } = Astro.props;
 
 ---
 
-<div class="mx-auto max-w-screen-md px-3"><slot /></div>
+<div class:list={["mx-auto px-4 md:px-6", wide ? "max-w-6xl" : "max-w-screen-md"]}>
+  <slot />
+</div>

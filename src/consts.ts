@@ -1,24 +1,19 @@
 import type { Metadata, Site } from "@types";
 
 export const SITE: Site = {
-  TITLE: "Astro Micro Academics",
-  DESCRIPTION: "Astro Micro Academics is for academic user.",
-  EMAIL: "youremial@gmail.com",
+  TITLE: "Yunan Zhang | CS PhD Student",
+  DESCRIPTION: "Personal academic website of a Computer Science PhD student.",
+  EMAIL: "zhan4404@purdue.edu",
   NUM_POSTS_ON_HOMEPAGE: 2,
-  NUM_PUBLICATIONS_ON_HOMEPAGE: 3,
-  SITEURL: 'https://astro-micro-academic.vercel.app' // Update here to link the RSS icon to your website rss
+  NUM_PUBLICATIONS_ON_HOMEPAGE: 5,
+  SITEURL: "https://your-domain.com", // Update to your production domain for RSS and SEO.
 };
 
-export const HIGHLIGHTAUTHOR = "John B"
+export const HIGHLIGHTAUTHOR = "Yunan Zhang";
 
 export const HOME: Metadata = {
   TITLE: "Home",
-  DESCRIPTION: "Astro Micro is an accessible theme for Astro.",
-};
-
-export const BLOG: Metadata = {
-  TITLE: "Blog",
-  DESCRIPTION: "A collection of articles on topics I am passionate about.",
+  DESCRIPTION: "Research overview and recent publications.",
 };
 
 export const RESEARCH: Metadata = {
@@ -29,18 +24,10 @@ export const RESEARCH: Metadata = {
 
 export const CV: Metadata = {
   TITLE: "CV",
-  DESCRIPTION:
-    "your cv",
-};
-
-export const TAGS: Metadata = {
-  TITLE: "TAGS",
-  DESCRIPTION:
-    "blog tag filter",
+  DESCRIPTION: "Education and experience.",
 };
 
 export const ABOUT: Metadata = {
   TITLE: "ABOUT",
-  DESCRIPTION:
-    "A self-intro",
+  DESCRIPTION: "Background and interests.",
 };

@@ -2,157 +2,156 @@
 import Layout from "@layouts/Layout.astro";
 import Container from "@components/Container.astro";
 import { SITE, HOME } from "@consts";
-import ArrowCard from "@components/ArrowCard.astro";
 import Link from "@components/Link.astro";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import PublicationCard from "@components/PublicationCard.astro";
 import SocialIcons from "@components/SocialIcons.astro";
-
-const blog = (await getCollection("blog"))
-  .filter((post) => !post.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, SITE.NUM_POSTS_ON_HOMEPAGE);
+import VisitorMap from "@components/VisitorMap.astro";
+import { PROFILE } from "@data/profile";
+import Image from "astro/components/Image.astro";
 
 const publications: CollectionEntry<"publications">[] = (
   await getCollection("publications")
 )
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, SITE.NUM_PUBLICATIONS_ON_HOMEPAGE);
+
+const teachingNotes = [
+  "Teaching details will be updated here.",
+  "If you are interested in course projects or mentoring, feel free to reach out by email.",
+];
 ---
 
 <Layout title={HOME.TITLE} description={HOME.DESCRIPTION}>
-  <Container>
-    <aside data-pagefind-ignore>
-      <h1 class="animate font-semibold text-black dark:text-white">
-        Astro Micro Academics 🍄
-      </h1>
-      <div class="space-y-16">
-        <section>
-          <article class="space-y-4">
-            <span class="animate">
-              <p>
-                Astro Micro Academics is a theme for <Link
-                  href="https://astro.build/">Astro</Link
-                > and tailored for academic users and researchers. It's built on <Link href="https://astro.build/themes/details/astro-micro/">Astro Micro</Link> and
-                <Link href="https://github.com/markhorn-dev">
-                  Mark Horn's
-                </Link> popular theme <Link
-                  href="https://astro.build/themes/details/astronano/"
-                  >Astro Nano</Link
-                >. 
-              </p>
-              <p>
-                Micro Academics adds features like <span class="text-red-500">tags, and blog math support</span> and also inherits <Link href="https://pagefind.app/"
-                  >Pagefind</Link
-                > for search, <Link href="https://giscus.app">Giscus</Link> for comments,
-                from Astro Micro. See full changes this <Link
-                  href="/blog/00-academic-astro">here</Link
-                >.
-              </p>
-            </span>
-            <span class="animate">
-              <p>
-                Micro Academics still comes with everything great about Micro and Nano — full type
-                safety, a sitemap, an RSS feed, and Markdown + MDX support.
-                Styled with TailwindCSS and preconfigured with system, light,
-                and dark themes.
-              </p>
-              <p>
-                Visit
-                <Link href="https://github.com/jingwu2121/astro-micro-academic">
-                  Astro Micro Academics on GitHub
-                </Link>
-                to fork the repository to get started.
-              </p>
-            </span>
-            
-          </article>
-        </section>
+  <Container wide={true}>
+    <aside data-pagefind-ignore class="space-y-7 md:space-y-8">
+      <section id="about" class="animate pt-2">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start md:gap-6">
+          <div class="mx-auto flex flex-col items-center gap-2 md:mx-0">
+            <Image
+              src={PROFILE.profileImage.src}
+              alt={PROFILE.profileImage.alt}
+              width={240}
+              height={240}
+              class="h-48 w-48 rounded-full object-cover shadow-sm md:h-56 md:w-56"
+            />
+            <a
+              href={PROFILE.socialLinks.scholar}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-4 inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-2.5 py-1 text-xs font-mono tracking-[0.02em] text-neutral-600 transition-colors hover:border-neutral-400 hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-neutral-500 dark:hover:text-white"
+            >
+              <i class="bi bi-mortarboard-fill"></i>
+              Google Scholar
+            </a>
+          </div>
+          <div class="space-y-2.5">
+            <div class="flex flex-col gap-1.5 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h1 class="text-3xl font-bold tracking-tight text-black dark:text-white md:text-4xl">
+                  {PROFILE.name}
+                  <span class="mx-2 text-neutral-400 dark:text-neutral-500">-</span>
+                  <span class="font-medium text-neutral-500 dark:text-neutral-300">
+                    {PROFILE.nativeName}
+                  </span>
+                </h1>
+                <p class="mt-1 text-lg font-medium text-neutral-600 dark:text-neutral-300">
+                  {PROFILE.shortBio}
+                </p>
+              </div>
+              <SocialIcons icon_size="text-2xl" gap_class="gap-2.5" />
+            </div>
 
-        <section class="animate space-y-2 border-2 border-red-800 text-red-800 dark:border-red-400 border-dashed p-2 dark:text-red-400">
-          📢📢 Your important Information (Open for job/Recruiting students)
-        </section>
-
-        <section class="animate space-y-6">
-          <span class="animate">
-            <h4 class="font-semibold text-black dark:text-white">
-              Let's Connect
-            </h4>
-            <article>
+            <article class="space-y-1.5 text-sm leading-[1.45] md:text-base md:leading-[1.5]">
+              {PROFILE.intro.map((line) => <p>{line}</p>)}
               <p>
-                If you want to get in touch with me about something or just to say
-                hi, reach out on social media or send me an email.
+                <span class="font-semibold">Affiliation:</span> {PROFILE.affiliation}
               </p>
+              <p>
+                <span class="font-semibold">Location:</span> {PROFILE.location}
+              </p>
+              <p>
+                Learn more in my <Link href="/cv">CV</Link>.
+              </p>
+
+              <div id="research" class="space-y-1 pt-0.5">
+                <p class="font-semibold text-black dark:text-white">Research</p>
+                <p>{PROFILE.researchSummary}</p>
+                <ul class="list-disc space-y-0.5 pl-4">
+                  {PROFILE.researchThemes.map((theme) => (
+                    <li>
+                      <span class="font-semibold text-black dark:text-white">{theme.title}:</span> {theme.description}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </article>
-            <SocialIcons icon_size={'text-3xl'} />
-          </span>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section class="animate space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-y-2">
-            <h2 class="font-semibold text-black dark:text-white">
-              Research Interests
-            </h2>
-          </div>
-          <ul class="not-prose flex flex-col gap-4">
-            <li>3D Vision</li>
-            <li>AIGC</li>
-          </ul>
-        </section>
-        
-        <section class="animate space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-y-2">
-            <h2 class="font-semibold text-black dark:text-white">
-              News
-            </h2>
-          </div>
-          <ul class="not-prose flex flex-col gap-4 overflow-y-auto max-h-[150px] scroll_bar">
-            <li>[06/2024]: Your News1</li>
-            <li>[06/2024]: Your <span class="text-red-600">News2</span></li>
-            <li>[06/2024]: Your <span class="text-red-600">News2</span></li>
-            <!-- <li>[06/2024]: Your <span class="text-red-600">News2</span></li>
-            <li>[06/2024]: Your <span class="text-red-600">News2</span></li> -->
-          </ul>
-        </section>
+      <section id="news" class="animate space-y-2.5">
+        <div class="section-marker"></div>
+        <h2 class="section-title">News + Updates</h2>
+        <ul class="not-prose divide-y divide-neutral-300 dark:divide-white/10">
+          {PROFILE.newsItems.map((item) => (
+            <li class="grid grid-cols-1 gap-1.5 py-2 md:grid-cols-[120px_minmax(0,1fr)] md:gap-2.5">
+              <div class="font-semibold text-black dark:text-white">{item.date}</div>
+              <div class="space-y-1">
+                <p class="text-base">{item.text}</p>
+                <div class="flex flex-wrap gap-2">
+                  {item.tags.map((tag) => (
+                    <span class="rounded-full bg-neutral-200 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        <section class="animate space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-y-2">
-            <h2 class="font-semibold text-black dark:text-white">
-              Recent research
-            </h2>
-            <Link href="/publications"> See all research </Link>
-          </div>
-          <ul class="not-prose flex flex-col gap-4">
-            {
+      <section id="publications" class="animate space-y-2.5">
+        <div class="section-marker"></div>
+        <div class="flex flex-wrap items-center justify-between gap-y-2">
+          <h2 class="section-title m-0">Publications</h2>
+          <Link href="/publications">See all research</Link>
+        </div>
+        <ul class="not-prose flex flex-col gap-2.5">
+          {
+            publications.length > 0 ? (
               publications.map((publication) => (
                 <li>
-                  <PublicationCard entry={publication} />
+                  <PublicationCard entry={publication} compact={true} />
                 </li>
               ))
-            }
-          </ul>
-        </section>
+            ) : (
+              <li class="text-sm text-neutral-600 dark:text-neutral-400">
+                No publications yet. Add files in `src/content/publications/`.
+              </li>
+            )
+          }
+        </ul>
+      </section>
 
-        <section class="animate space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-y-2">
-            <h2 class="font-semibold text-black dark:text-white">
-              Latest posts
-            </h2>
-            <Link href="/blog"> See all posts </Link>
+      <section id="teaching-and-visitors" class="animate">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start md:gap-5">
+          <section id="teaching" class="space-y-3">
+            <div class="section-marker"></div>
+            <h2 class="section-title">Teaching</h2>
+            <div class="space-y-1.5 text-sm leading-relaxed md:text-base">
+              {teachingNotes.map((note) => <p>{note}</p>)}
+            </div>
+          </section>
+
+          <div class="w-full">
+            <VisitorMap />
           </div>
-          <ul class="not-prose flex flex-col gap-4">
-            {
-              blog.map((post) => (
-                <li>
-                  <ArrowCard entry={post} />
-                </li>
-              ))
-            }
-          </ul>
-        </section>
+        </div>
+      </section>
 
-      </div>
     </aside>
   </Container>
 </Layout>

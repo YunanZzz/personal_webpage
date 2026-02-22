@@ -21,7 +21,7 @@ const publications = (await getCollection("publications"))
           {
             publications.map((publication) => (
               <li>
-                <PublicationCard entry={publication} />
+                <PublicationCard entry={publication} compact={true} />
               </li>
             ))
           }
