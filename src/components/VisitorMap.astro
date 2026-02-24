@@ -87,12 +87,17 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
 
   const hasSupabase = !!supabaseUrl && !!supabaseAnonKey;
 
+  const isJwtLikeKey = typeof supabaseAnonKey === "string" && supabaseAnonKey.startsWith("eyJ");
   const supabaseHeaders = hasSupabase
-    ? {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-        "Content-Type": "application/json",
-      }
+    ? (() => {
+        const headers = {
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+        };
+        // New Supabase "Publishable API Key" is not a JWT; only send Authorization for JWT-style anon keys.
+        if (isJwtLikeKey) headers.Authorization = `Bearer ${supabaseAnonKey}`;
+        return headers;
+      })()
     : null;
 
   const uniqueByLocation = (visitors) => {
@@ -198,7 +203,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
             if (!Number.isNaN(current.lat) && !Number.isNaN(current.lng)) {
               visitors = [current, ...visitors];
               if (hasSupabase && supabaseHeaders) {
-                fetch(`${supabaseUrl}/rest/v1/visitor_points`, {
+                const insertRes = await fetch(`${supabaseUrl}/rest/v1/visitor_points`, {
                   method: "POST",
                   headers: {
                     ...supabaseHeaders,
@@ -211,21 +216,26 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
                     lng: current.lng,
                     ts: current.ts,
                   }),
-                }).catch(() => {});
+                });
+                if (insertRes.ok && typeof sessionStorage !== "undefined") {
+                  sessionStorage.setItem(SESSION_INGEST_KEY, "1");
+                } else if (!insertRes.ok) {
+                  console.warn("VisitorMap insert failed:", insertRes.status);
+                }
               } else if (ingestUrl) {
-                fetch(ingestUrl, {
+                const insertRes = await fetch(ingestUrl, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(current),
-                }).catch(() => {});
-              }
-              if (typeof sessionStorage !== "undefined") {
-                sessionStorage.setItem(SESSION_INGEST_KEY, "1");
+                });
+                if (insertRes.ok && typeof sessionStorage !== "undefined") {
+                  sessionStorage.setItem(SESSION_INGEST_KEY, "1");
+                }
               }
             }
           }
-        } catch {
-          // Ignore geo lookup failures.
+        } catch (error) {
+          console.warn("VisitorMap geo/insert failed:", error);
         }
       }
     }
