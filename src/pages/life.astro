@@ -12,9 +12,76 @@ const visitedPlaces = [
   { city: "Shanghai", region: "Shanghai", country: "CN" },
 ];
 
-const visitedUsStates = ["Indiana", "Washington", "New York"];
-const visitedChinaProvinces = ["Jiangsu", "Shanghai"];
-const visitedCountries: string[] = [];
+const visitedUsStates = [
+  "Arizona",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Florida",
+  "Georgia",
+  "Illinois",
+  "Indiana",
+  "Kentucky",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New York",
+  "Ohio",
+  "Pennsylvania",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Virginia",
+  "Washington",
+  "Wisconsin",
+  "Wyoming",
+];
+const visitedChinaProvinces = [
+  "Liaoning",
+  "Jilin",
+  "Heilongjiang",
+  "Jiangsu",
+  "Zhejiang",
+  "Anhui",
+  "Fujian",
+  "Jiangxi",
+  "Hubei",
+  "Hunan",
+  "Guangdong",
+  "Hainan",
+  "Sichuan",
+  "Guizhou",
+  "Yunnan",
+  "Shaanxi",
+  "Gansu",
+  "Qinghai",
+  "Guangxi",
+  "Ningxia",
+  "Beijing",
+  "Shanghai",
+  "Chongqing",
+  "Hong Kong",
+  "Macau",
+];
+const visitedCountries: string[] = [
+  "Japan",
+  "South Korea",
+  "Republic of Korea",
+  "Malaysia",
+  "Singapore",
+  "Thailand",
+  "France",
+  "Belgium",
+  "Italy",
+  "Austria",
+  "Switzerland",
+  "Liechtenstein",
+  "Netherlands",
+  "The Netherlands",
+];
 const photographyFiles = readdirSync("./public/photograph")
   .filter((file) => /\.(jpg|jpeg|png|webp|gif)$/i.test(file))
   .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
@@ -36,7 +103,7 @@ const photoCaptions: Record<string, string> = {
 };
 
 const photographyItems = photographyFiles.map((file, index) => ({
-  src: `/photograph/${encodeURIComponent(file)}`,
+  src: `${import.meta.env.BASE_URL.replace(/\/+$/, "")}/photograph/${encodeURIComponent(file)}`,
   alt: `Photography ${index + 1}`,
   caption: photoCaptions[file] ?? "",
 }));
@@ -93,9 +160,6 @@ const photographyItems = photographyFiles.map((file, index) => ({
   define:vars={{ visitedPlaces, visitedUsStates, visitedChinaProvinces, visitedCountries }}
 >
   const getMapEl = () => document.getElementById("travel-map-canvas");
-  const STORAGE_COUNTRIES = "travel-map-visited-countries-v1";
-  const STORAGE_US = "travel-map-visited-us-states-v1";
-  const STORAGE_CN = "travel-map-visited-china-provinces-v1";
   const LEAFLET_CSS_URLS = [
     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
     "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
@@ -246,22 +310,12 @@ const photographyItems = photographyFiles.map((file, index) => ({
       fillColor: "#8c8c8c",
       fillOpacity: 0.28,
     };
-    const readSelection = (key, defaults) => {
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return [...defaults];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [...defaults];
-      } catch (_) {
-        return [...defaults];
-      }
-    };
     const normalizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
     const countryNameOf = (feature) => feature?.properties?.name || feature?.properties?.ADMIN || "";
     const COUNTRY_BLOCKLIST = new Set(["unitedstates", "unitedstatesofamerica", "china"]);
-    const selectedCountries = readSelection(STORAGE_COUNTRIES, visitedCountries).map(normalizeName);
-    const selectedUsStates = readSelection(STORAGE_US, visitedUsStates);
-    const selectedChinaProvinces = readSelection(STORAGE_CN, visitedChinaProvinces);
+    const selectedCountries = [...visitedCountries].map(normalizeName);
+    const selectedUsStates = [...visitedUsStates];
+    const selectedChinaProvinces = [...visitedChinaProvinces];
     const isCountryVisited = (name) => selectedCountries.includes(normalizeName(name));
     const isCountrySelectable = (name) => !COUNTRY_BLOCKLIST.has(normalizeName(name));
     const isUsVisited = (name) => selectedUsStates.includes(name);

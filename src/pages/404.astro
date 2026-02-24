@@ -3,6 +3,8 @@ import Layout from "@layouts/Layout.astro";
 import Container from "@components/Container.astro";
 import BackToPrevious from "@components/BackToPrevious.astro";
 import { SITE } from "@consts";
+
+const homePath = `${import.meta.env.BASE_URL.replace(/\/+$/, "")}/`;
 ---
 
 <Layout title="404" description={SITE.DESCRIPTION}>
@@ -12,7 +14,7 @@ import { SITE } from "@consts";
         404: Page not found
       </h4>
       <span class="animate">
-        <BackToPrevious href="/">Go to home page</BackToPrevious>
+        <BackToPrevious href={homePath}>Go to home page</BackToPrevious>
       </span>
     </div>
   </Container>

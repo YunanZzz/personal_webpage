@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { Image } from "astro:assets";
 import { HIGHLIGHTAUTHOR } from "@consts";
 
 type Props = {
@@ -31,6 +30,9 @@ const webLink = decomposeURL(entry.data.webURL);
 const authorsParts = splitStr(entry.data.authors, HIGHLIGHTAUTHOR);
 const pubText = entry.data.pub ?? "";
 const isSubmittedVenue = /^submitted to\b/i.test(pubText);
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const withBase = (path: string) => `${base}/${path.replace(/^\/+/, "")}`;
+const imageSrc = entry.data.img ? withBase(entry.data.img) : "";
 
 ---
 
@@ -40,16 +42,14 @@ const isSubmittedVenue = /^submitted to\b/i.test(pubText);
     compact ? "grid-cols-auto md:grid-cols-[150px_auto] gap-2.5 px-2.5 py-2" : "grid-cols-auto md:grid-cols-[204px_auto] gap-4 px-4 py-3",
   ]}
 >
-  <Image
-  src={entry.data.img ?? ''}
-  alt={entry.data.imgAlt ?? ''}
-  width={640}
-  height={480}
-  class:list={[
-    "shadow-sm rounded-md hover:opacity-80 transition hidden md:flex object-contain bg-neutral-100 dark:bg-neutral-800/60",
-    compact ? "sm:w-[150px] sm:h-[86px] sm:mr-2" : "sm:w-[240px] sm:h-[135px] sm:mr-6",
-  ]}
-  loading="eager"
+  <img
+    src={imageSrc}
+    alt={entry.data.imgAlt ?? ""}
+    class:list={[
+      "shadow-sm rounded-md hover:opacity-80 transition hidden md:flex object-contain bg-neutral-100 dark:bg-neutral-800/60",
+      compact ? "sm:w-[150px] sm:h-[86px] sm:mr-2" : "sm:w-[240px] sm:h-[135px] sm:mr-6",
+    ]}
+    loading="eager"
   />
 
 

@@ -3,13 +3,18 @@ import Container from "@components/Container.astro";
 import Link from "@components/Link.astro";
 
 const pathname = Astro.url.pathname;
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const withBase = (path: string) => {
+  if (path.startsWith("#")) return `${base}/#${path.slice(1)}`;
+  return `${base}/${path.replace(/^\/+/, "")}`;
+};
 
 const navItems = [
-  { href: "/#about", label: "about" },
-  { href: "/#research", label: "research" },
-  { href: "/#news", label: "news" },
-  { href: "/#publications", label: "publications" },
-  { href: "/resume.pdf", label: "cv", external: true },
+  { href: withBase("#about"), label: "about" },
+  { href: withBase("#research"), label: "research" },
+  { href: withBase("#news"), label: "news" },
+  { href: withBase("#publications"), label: "publications" },
+  { href: withBase("resume.pdf"), label: "cv", external: true },
 ];
 
 const isActive = (href: string) => {
@@ -19,7 +24,8 @@ const isActive = (href: string) => {
   return pathname === pathOnly || (pathOnly !== "/" && pathname.startsWith(`${pathOnly}/`));
 };
 
-const isLifeActive = pathname === "/life" || pathname.startsWith("/life/");
+const lifePath = withBase("life");
+const isLifeActive = pathname === lifePath || pathname.startsWith(`${lifePath}/`);
 ---
 
 <header transition:persist>
@@ -45,7 +51,7 @@ const isLifeActive = pathname === "/life" || pathname.startsWith("/life/");
       </nav>
 
       <div class="absolute right-0 top-1/2 -translate-y-1/2">
-        <Link href="/life" underline={false} data-astro-reload>
+        <Link href={lifePath} underline={false} data-astro-reload>
           <span
             class:list={[
               "rounded-full border px-2.5 py-1 text-xs font-mono lowercase tracking-wide transition-colors md:text-sm",

@@ -11,6 +11,9 @@ import VisitorMap from "@components/VisitorMap.astro";
 import { PROFILE } from "@data/profile";
 import Image from "astro/components/Image.astro";
 
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const withBase = (path: string) => `${base}/${path.replace(/^\/+/, "")}`;
+
 const publications: CollectionEntry<"publications">[] = (
   await getCollection("publications")
 )
@@ -22,10 +25,10 @@ const teachingExperience = [
     course: "CS 44000",
     courseName: "Large Scale Data Analytics",
     terms: [
-      { label: "Fall 2026", link: "https://www.cs.purdue.edu/homes/csjgwang/CS440/" },
-      { label: "Fall 2025" },
-      { label: "Spring 2025" },
-      { label: "Fall 2024" },
+      { label: "Fall 2026",link:"https://www.cs.purdue.edu/homes/csjgwang/CS440/"},
+      { label: "Fall 2025"},
+      { label: "Spring 2025"},
+      { label: "Fall 2024"},
     ],
   },
   {
@@ -54,7 +57,7 @@ const researchFocus = [
         <div class="grid grid-cols-1 gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start md:gap-6">
           <div class="mx-auto flex flex-col items-center gap-2 md:mx-0">
             <Image
-              src={PROFILE.profileImage.src}
+              src={withBase(PROFILE.profileImage.src)}
               alt={PROFILE.profileImage.alt}
               width={240}
               height={240}
@@ -90,7 +93,10 @@ const researchFocus = [
             <article class="space-y-1.5 text-sm leading-[1.45] md:text-base md:leading-[1.5]">
               <div class="space-y-0">
                 {PROFILE.intro.map((line, index) => (
-                  <p class:list={["m-0 leading-[1.45]", index === 2 && "mt-3"]} set:html={line}></p>
+                  <p
+                    class:list={["m-0 leading-[1.45]", index === 2 && "mt-3"]}
+                    set:html={line.replaceAll('src="/', `src="${withBase("")}`)}
+                  ></p>
                 ))}
               </div>
               <p class="flex flex-wrap items-center justify-center gap-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 md:text-base">
@@ -151,7 +157,7 @@ const researchFocus = [
         <div class="section-marker"></div>
         <div class="flex flex-wrap items-center justify-between gap-y-2">
           <h2 class="section-title m-0">Publications</h2>
-          <Link href="/publications">See all research</Link>
+          <Link href={withBase("publications")}>See all research</Link>
         </div>
         <ul class="not-prose flex flex-col gap-2.5">
           {
