@@ -190,11 +190,9 @@ const researchFocus = [
                       <>
                         {index > 0 && ", "}
                         {term.link ? (
-                          <a href={term.link} target="_blank" rel="noopener noreferrer" class="underline underline-offset-2">
-                            {term.label}
-                          </a>
+                          <a href={term.link} target="_blank" rel="noopener noreferrer" class="underline underline-offset-2">{term.label.trim()}</a>
                         ) : (
-                          term.label
+                          term.label.trim()
                         )}
                       </>
                     ))}
