@@ -74,6 +74,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
   const dialogEl = document.getElementById("visitor-dialog");
   const listEl = document.getElementById("visitor-list");
   const countEl = document.getElementById("visitor-count");
+  const VISITOR_POLL_MS = 30000;
+  const SESSION_INGEST_KEY = "visitor-map-ingested-v1";
 
   const normalize = (item) => ({
     city: item.city || "Unknown city",
@@ -147,7 +149,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
     });
   };
 
-  const loadVisitors = async () => {
+  const loadVisitors = async ({ includeCurrentVisit = false } = {}) => {
     let visitors = fallbackVisitors.map(normalize);
     if (hasSupabase && supabaseHeaders) {
       try {
@@ -178,45 +180,54 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
       }
     }
 
-    try {
-      const geoRes = await fetch("https://ipapi.co/json/");
-      if (geoRes.ok) {
-        const geo = await geoRes.json();
-        const current = normalize({
-          city: geo.city,
-          country: geo.country_code,
-          lat: geo.latitude,
-          lng: geo.longitude,
-          ts: new Date().toISOString(),
-        });
-        if (!Number.isNaN(current.lat) && !Number.isNaN(current.lng)) {
-          visitors = [current, ...visitors];
-          if (hasSupabase && supabaseHeaders) {
-            fetch(`${supabaseUrl}/rest/v1/visitor_points`, {
-              method: "POST",
-              headers: {
-                ...supabaseHeaders,
-                Prefer: "return=minimal",
-              },
-              body: JSON.stringify({
-                city: current.city,
-                country: current.country,
-                lat: current.lat,
-                lng: current.lng,
-                ts: current.ts,
-              }),
-            }).catch(() => {});
-          } else if (ingestUrl) {
-            fetch(ingestUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(current),
-            }).catch(() => {});
+    if (includeCurrentVisit) {
+      const alreadyIngested =
+        typeof sessionStorage !== "undefined" && sessionStorage.getItem(SESSION_INGEST_KEY) === "1";
+      if (!alreadyIngested) {
+        try {
+          const geoRes = await fetch("https://ipapi.co/json/");
+          if (geoRes.ok) {
+            const geo = await geoRes.json();
+            const current = normalize({
+              city: geo.city,
+              country: geo.country_code,
+              lat: geo.latitude,
+              lng: geo.longitude,
+              ts: new Date().toISOString(),
+            });
+            if (!Number.isNaN(current.lat) && !Number.isNaN(current.lng)) {
+              visitors = [current, ...visitors];
+              if (hasSupabase && supabaseHeaders) {
+                fetch(`${supabaseUrl}/rest/v1/visitor_points`, {
+                  method: "POST",
+                  headers: {
+                    ...supabaseHeaders,
+                    Prefer: "return=minimal",
+                  },
+                  body: JSON.stringify({
+                    city: current.city,
+                    country: current.country,
+                    lat: current.lat,
+                    lng: current.lng,
+                    ts: current.ts,
+                  }),
+                }).catch(() => {});
+              } else if (ingestUrl) {
+                fetch(ingestUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(current),
+                }).catch(() => {});
+              }
+              if (typeof sessionStorage !== "undefined") {
+                sessionStorage.setItem(SESSION_INGEST_KEY, "1");
+              }
+            }
           }
+        } catch {
+          // Ignore geo lookup failures.
         }
       }
-    } catch {
-      // Ignore geo lookup failures.
     }
     return visitors;
   };
@@ -408,27 +419,29 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
         pointerId = null;
       };
 
+      const onPointerLeave = (event) => {
+        onPointerUp(event);
+        hideTooltip();
+      };
+
       window.addEventListener("resize", handleResize);
       globeEl.addEventListener("pointermove", onHover);
       globeEl.addEventListener("pointerdown", onPointerDown);
       globeEl.addEventListener("pointermove", onPointerMove);
       globeEl.addEventListener("pointerup", onPointerUp);
       globeEl.addEventListener("pointercancel", onPointerUp);
-      globeEl.addEventListener("pointerleave", (event) => {
-        onPointerUp(event);
-        hideTooltip();
-      });
+      globeEl.addEventListener("pointerleave", onPointerLeave);
 
-      document.addEventListener("astro:before-swap", () => {
+      return () => {
         window.removeEventListener("resize", handleResize);
         globeEl.removeEventListener("pointermove", onHover);
         globeEl.removeEventListener("pointerdown", onPointerDown);
         globeEl.removeEventListener("pointermove", onPointerMove);
         globeEl.removeEventListener("pointerup", onPointerUp);
         globeEl.removeEventListener("pointercancel", onPointerUp);
-        globeEl.removeEventListener("pointerleave", onPointerUp);
+        globeEl.removeEventListener("pointerleave", onPointerLeave);
         globe.destroy();
-      });
+      };
     } catch {
       if (listEl) {
         listEl.insertAdjacentHTML(
@@ -436,14 +449,41 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
           `<li class="text-neutral-500 dark:text-neutral-400">Globe render unavailable in this browser.</li>`,
         );
       }
+      return null;
     }
   };
 
   const run = async () => {
     bindDialog();
-    const visitors = await loadVisitors();
-    renderList(visitors);
-    await initGlobe(visitors);
+    let globeCleanup = null;
+    let refreshInFlight = false;
+
+    const refresh = async (includeCurrentVisit = false) => {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
+      try {
+        const visitors = await loadVisitors({ includeCurrentVisit });
+        renderList(visitors);
+        if (typeof globeCleanup === "function") globeCleanup();
+        globeCleanup = await initGlobe(visitors);
+      } finally {
+        refreshInFlight = false;
+      }
+    };
+
+    await refresh(true);
+    const timer = window.setInterval(() => {
+      refresh(false);
+    }, VISITOR_POLL_MS);
+
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        window.clearInterval(timer);
+        if (typeof globeCleanup === "function") globeCleanup();
+      },
+      { once: true },
+    );
   };
 
   run();

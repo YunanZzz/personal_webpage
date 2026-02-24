@@ -13,7 +13,7 @@ import pagefind from "astro-pagefind";
 // https://astro.build/config
 export default defineConfig({
   site: "https://yunanzzz.github.io",
-  base: "/personal_webpage/",
+  // base: "/personal_webpage/",
   integrations: [tailwind(), sitemap(), mdx(), pagefind()],
   markdown: {
     shikiConfig: {
