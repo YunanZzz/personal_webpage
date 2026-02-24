@@ -6,38 +6,58 @@ const pathname = Astro.url.pathname;
 
 const navItems = [
   { href: "/#about", label: "about" },
-  { href: "/#news", label: "news" },
   { href: "/#research", label: "research" },
+  { href: "/#news", label: "news" },
   { href: "/#publications", label: "publications" },
-  { href: "/cv", label: "cv" },
+  { href: "/resume.pdf", label: "cv", external: true },
 ];
 
 const isActive = (href: string) => {
+  if (href.endsWith(".pdf")) return false;
   if (href.includes("#")) return false;
   const [pathOnly] = href.split("#");
   return pathname === pathOnly || (pathOnly !== "/" && pathname.startsWith(`${pathOnly}/`));
 };
+
+const isLifeActive = pathname === "/life" || pathname.startsWith("/life/");
 ---
 
 <header transition:persist>
   <Container wide={true}>
-    <nav class="flex items-center justify-center gap-4 py-1 text-sm md:gap-7">
-      {
-        navItems.map((item) => (
-          <Link href={item.href} underline={false}>
-            <span
-              class:list={[
-                "font-mono lowercase tracking-wide transition-colors duration-200",
-                isActive(item.href)
-                  ? "font-bold text-black dark:text-white"
-                  : "text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white",
-              ]}
-            >
-              {item.label}
-            </span>
-          </Link>
-        ))
-      }
-    </nav>
+    <div class="relative py-1">
+      <nav class="flex items-center justify-center gap-4 text-sm md:gap-7">
+        {
+          navItems.map((item) => (
+            <Link href={item.href} underline={false} external={item.external}>
+              <span
+                class:list={[
+                  "font-mono lowercase tracking-wide transition-colors duration-200",
+                  isActive(item.href)
+                    ? "font-bold text-black dark:text-white"
+                    : "text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white",
+                ]}
+              >
+                {item.label}
+              </span>
+            </Link>
+          ))
+        }
+      </nav>
+
+      <div class="absolute right-0 top-1/2 -translate-y-1/2">
+        <Link href="/life" underline={false} data-astro-reload>
+          <span
+            class:list={[
+              "rounded-full border px-2.5 py-1 text-xs font-mono lowercase tracking-wide transition-colors md:text-sm",
+              isLifeActive
+                ? "border-neutral-500 bg-neutral-200 text-black dark:border-neutral-500 dark:bg-neutral-700 dark:text-white"
+                : "border-neutral-300 text-neutral-600 hover:bg-neutral-100 hover:text-black dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white",
+            ]}
+          >
+            life
+          </span>
+        </Link>
+      </div>
+    </div>
   </Container>
 </header>

@@ -1,0 +1,458 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import { readdirSync } from "node:fs";
+
+const visitedPlaces = [
+  { city: "West Lafayette", region: "Indiana", country: "US" },
+  { city: "Redmond", region: "Washington", country: "US" },
+  { city: "Seattle", region: "Washington", country: "US" },
+  { city: "New York", region: "New York", country: "US" },
+  { city: "Suzhou", region: "Jiangsu", country: "CN" },
+  { city: "Shanghai", region: "Shanghai", country: "CN" },
+];
+
+const visitedUsStates = ["Indiana", "Washington", "New York"];
+const visitedChinaProvinces = ["Jiangsu", "Shanghai"];
+const visitedCountries: string[] = [];
+const photographyFiles = readdirSync("./public/photograph")
+  .filter((file) => /\.(jpg|jpeg|png|webp|gif)$/i.test(file))
+  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+const photoCaptions: Record<string, string> = {
+  "02-f1-2.jpg": "2025 F1 Las Vegas GP",
+  "01-f1-1.jpg": "2025 F1 Las Vegas GP Qualifying",
+  "03-moon.jpg": "The moon on the Mid-Autumn Festival, 2025",
+  "04.jpg": "A stunning winter sunset from my backyard",
+  "05.JPG": "Mounted Unit, Chicago Police Department",
+  "06.JPG": "Aurora, shot in West Lafayette, Indiana",
+  "07.jpg": "Bryce Canyon National Park, Utah",
+  "08.jpg": "Arches National Park, Utah",
+  "09.jpg": "Monument Valley, Utah",
+  "10.jpg": "Forrest Gump Point, Monument Valley, Utah",
+  "21.JPG": "Cafeteria, Microsoft Campus, Redmond, Washington",
+
+
+};
+
+const photographyItems = photographyFiles.map((file, index) => ({
+  src: `/photograph/${encodeURIComponent(file)}`,
+  alt: `Photography ${index + 1}`,
+  caption: photoCaptions[file] ?? "",
+}));
+---
+
+<Layout title="Life" description="About me, travel map, and photography.">
+  <Container wide={true}>
+    <aside data-pagefind-ignore class="space-y-7 md:space-y-8">
+      <section id="life-about" class="animate space-y-2.5">
+        <div class="section-marker"></div>
+        <h2 class="section-title m-0">Beyond Research</h2>
+        <div class="space-y-1.5 text-sm leading-[1.5] md:text-base">
+          <p>The world is rich and full of color. I alway enjoy exploring new experiences and learning from them.</p>
+          <p>I love traveling and the sense of freedom that comes with being on the road. </p>
+          <p>In my free time, I like working out 🏋️, skiing 🎿, cycling 🚴, and playing badminton 🏸. </p>
+          <p>From elementary school through college, I played in school wind bands, and I have both an alto and a soprano saxophone 🎷. I’m also a certified scuba diver 🤿 with a PADI Advanced Open Water (AOW) certification.</p>
+        </div>
+      </section>
+
+      <section id="travel-map" class="animate space-y-2.5">
+        <div class="section-marker"></div>
+        <h2 class="section-title m-0">My Travel Map -- "<em>To travel is to live.</em>"</h2>
+
+        <div class="grid grid-cols-1 gap-3 md:gap-4">
+          <div class="overflow-hidden rounded-xl border border-neutral-300/80 bg-neutral-100 p-2.5 dark:border-neutral-700/70 dark:bg-neutral-900">
+            <div
+              id="travel-map-canvas"
+              class="h-80 w-full rounded-lg border border-neutral-300/80 md:h-96 dark:border-neutral-700/70"
+              style="height: 360px;"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="photography" class="animate space-y-2.5">
+        <div class="section-marker"></div>
+        <h2 class="section-title m-0">Photography</h2>
+        <div class="photo-masonry">
+          {photographyItems.map((item) => (
+            <figure class:list={["photo-card", item.caption && "has-caption"]}>
+              <img src={item.src} alt={item.alt} class="photo-image" loading="lazy" />
+              {item.caption && <figcaption class="photo-caption">{item.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    </aside>
+  </Container>
+</Layout>
+
+<script
+  is:inline
+  data-astro-rerun
+  define:vars={{ visitedPlaces, visitedUsStates, visitedChinaProvinces, visitedCountries }}
+>
+  const getMapEl = () => document.getElementById("travel-map-canvas");
+  const STORAGE_COUNTRIES = "travel-map-visited-countries-v1";
+  const STORAGE_US = "travel-map-visited-us-states-v1";
+  const STORAGE_CN = "travel-map-visited-china-provinces-v1";
+  const LEAFLET_CSS_URLS = [
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css",
+  ];
+  const LEAFLET_JS_URLS = [
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+    "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js",
+  ];
+
+  const loadCssFallback = async (urls) => {
+    if (document.getElementById("leaflet-css")) return;
+    for (const url of urls) {
+      const ok = await new Promise((resolve) => {
+        const css = document.createElement("link");
+        css.id = "leaflet-css";
+        css.rel = "stylesheet";
+        css.href = url;
+        css.onload = () => resolve(true);
+        css.onerror = () => {
+          css.remove();
+          resolve(false);
+        };
+        document.head.appendChild(css);
+      });
+      if (ok) return;
+    }
+    throw new Error("Failed to load Leaflet CSS");
+  };
+
+  const loadScriptFallback = async (urls) => {
+    for (const url of urls) {
+      const ok = await new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => {
+          script.remove();
+          resolve(false);
+        };
+        document.head.appendChild(script);
+      });
+      if (ok && window.L) return window.L;
+    }
+    throw new Error("Failed to load Leaflet JS");
+  };
+
+  const loadLeaflet = () =>
+    new Promise((resolve, reject) => {
+      if (window.L) return resolve(window.L);
+      loadCssFallback(LEAFLET_CSS_URLS)
+        .then(() => loadScriptFallback(LEAFLET_JS_URLS))
+        .then((L) => resolve(L))
+        .catch((err) => reject(err));
+    });
+
+  const waitForMapContainer = async () => {
+    for (let i = 0; i < 120; i++) {
+      const el = getMapEl();
+      if (el && el.clientWidth > 0 && el.clientHeight > 0) return el;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    return getMapEl();
+  };
+
+  const initMap = async () => {
+    const mapEl = await waitForMapContainer();
+    if (!mapEl) return;
+    const L = await loadLeaflet();
+    if (!L) return;
+
+    if (window.__travelMap && typeof window.__travelMap.remove === "function") {
+      try {
+        window.__travelMap.remove();
+      } catch (_) {}
+      window.__travelMap = null;
+    }
+
+    // Clear possible stale Leaflet state when navigating with view transitions.
+    if (mapEl._leaflet_id) {
+      try {
+        delete mapEl._leaflet_id;
+      } catch (_) {
+        mapEl._leaflet_id = undefined;
+      }
+    }
+    mapEl.innerHTML = "";
+    mapEl.classList.remove("leaflet-container");
+
+    const map = L.map(mapEl, {
+      zoomControl: true,
+      minZoom: 2,
+      maxZoom: 8,
+      worldCopyJump: true,
+    }).setView([28, 10], 2);
+    window.__travelMap = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    // Fix intermittent partial-tile rendering when container size settles after init.
+    const refreshMapSize = () => {
+      try {
+        map.invalidateSize({ pan: false, debounceMoveend: true });
+      } catch (_) {}
+    };
+    requestAnimationFrame(refreshMapSize);
+    setTimeout(refreshMapSize, 120);
+    setTimeout(refreshMapSize, 360);
+    setTimeout(refreshMapSize, 800);
+    setTimeout(refreshMapSize, 1400);
+
+    const resizeObserver = new ResizeObserver(() => refreshMapSize());
+    resizeObserver.observe(mapEl);
+    map.on("unload", () => {
+      try {
+        resizeObserver.disconnect();
+      } catch (_) {}
+    });
+
+    const onResize = () => refreshMapSize();
+    const onVisibility = () => {
+      if (!document.hidden) refreshMapSize();
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("orientationchange", onResize, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+
+    const worldStyle = {
+      color: "#9a9a9a",
+      weight: 0.6,
+      fillColor: "#f6f6f6",
+      fillOpacity: 0.18,
+    };
+    const subregionStyle = {
+      color: "#7a7a7a",
+      weight: 1.0,
+      fillColor: "#d6d6d6",
+      fillOpacity: 0.08,
+    };
+    const highlightStyle = {
+      color: "#2f2f2f",
+      weight: 1.2,
+      fillColor: "#8c8c8c",
+      fillOpacity: 0.28,
+    };
+    const readSelection = (key, defaults) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return [...defaults];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [...defaults];
+      } catch (_) {
+        return [...defaults];
+      }
+    };
+    const normalizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const countryNameOf = (feature) => feature?.properties?.name || feature?.properties?.ADMIN || "";
+    const COUNTRY_BLOCKLIST = new Set(["unitedstates", "unitedstatesofamerica", "china"]);
+    const selectedCountries = readSelection(STORAGE_COUNTRIES, visitedCountries).map(normalizeName);
+    const selectedUsStates = readSelection(STORAGE_US, visitedUsStates);
+    const selectedChinaProvinces = readSelection(STORAGE_CN, visitedChinaProvinces);
+    const isCountryVisited = (name) => selectedCountries.includes(normalizeName(name));
+    const isCountrySelectable = (name) => !COUNTRY_BLOCKLIST.has(normalizeName(name));
+    const isUsVisited = (name) => selectedUsStates.includes(name);
+    const isChinaVisited = (name) => selectedChinaProvinces.includes(name);
+
+    const fetchJson = async (urls) => {
+      for (const url of urls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) return res.json();
+        } catch (_) {}
+      }
+      throw new Error("Failed to fetch GeoJSON");
+    };
+
+    try {
+      const world = await fetchJson([
+        "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson",
+        "https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.geojson",
+      ]);
+      L.geoJSON(world, {
+        style: (feature) => {
+          const name = countryNameOf(feature);
+          return isCountrySelectable(name) && isCountryVisited(name) ? highlightStyle : worldStyle;
+        },
+        onEachFeature: (feature, layer) => {
+          const name = countryNameOf(feature);
+          layer.bindTooltip(name, { sticky: true });
+          layer.on("mouseover", () => {
+            if (isCountrySelectable(name)) {
+              layer.setStyle({ weight: 1.4 });
+            }
+          });
+          layer.on("mouseout", () => {
+            const activeStyle = isCountrySelectable(name) && isCountryVisited(name) ? highlightStyle : worldStyle;
+            layer.setStyle(activeStyle);
+          });
+        },
+      }).addTo(map);
+    } catch (_) {}
+
+    try {
+      const usStates = await fetchJson([
+        "https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/united-states.geojson",
+        "https://cdn.jsdelivr.net/gh/codeforgermany/click_that_hood@main/public/data/united-states.geojson",
+      ]);
+      L.geoJSON(usStates, {
+        style: (feature) => {
+          const name = feature?.properties?.name || "";
+          return isUsVisited(name) ? highlightStyle : subregionStyle;
+        },
+        onEachFeature: (feature, layer) => {
+          const name = feature?.properties?.name || "";
+          layer.bindTooltip(name, { sticky: true });
+          layer.on("mouseover", () => {
+            layer.setStyle({ weight: 1.4 });
+          });
+          layer.on("mouseout", () => {
+            const activeStyle = isUsVisited(name) ? highlightStyle : subregionStyle;
+            layer.setStyle(activeStyle);
+          });
+        },
+      }).addTo(map);
+    } catch (_) {}
+
+    try {
+      const chinaProvinces = await fetchJson([
+        "https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/china.geojson",
+        "https://cdn.jsdelivr.net/gh/codeforgermany/click_that_hood@main/public/data/china.geojson",
+      ]);
+      L.geoJSON(chinaProvinces, {
+        style: (feature) => {
+          const name = feature?.properties?.name || "";
+          return isChinaVisited(name) ? highlightStyle : subregionStyle;
+        },
+        onEachFeature: (feature, layer) => {
+          const name = feature?.properties?.name || "";
+          layer.bindTooltip(name, { sticky: true });
+          layer.on("mouseover", () => {
+            layer.setStyle({ weight: 1.4 });
+          });
+          layer.on("mouseout", () => {
+            const activeStyle = isChinaVisited(name) ? highlightStyle : subregionStyle;
+            layer.setStyle(activeStyle);
+          });
+        },
+      }).addTo(map);
+    } catch (_) {}
+
+    map.setView([30, 20], 2);
+    refreshMapSize();
+    map.on("unload", () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      document.removeEventListener("visibilitychange", onVisibility);
+    });
+  };
+
+  const bootMap = () =>
+    initMap().catch(() => {
+      const mapEl = getMapEl();
+      if (mapEl) {
+        mapEl.innerHTML =
+          '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#737373;font-size:14px;">Map failed to load (network/CDN blocked).</div>';
+      }
+    });
+
+  const initPhotoMasonry = () => {
+    const masonry = document.querySelector(".photo-masonry");
+    if (!masonry) return;
+
+    const rowSize = 8;
+    const gapSize = 6.4;
+
+    const layout = () => {
+      const cards = masonry.querySelectorAll(".photo-card");
+      cards.forEach((card) => {
+        const cardHeight = card.getBoundingClientRect().height;
+        const span = Math.max(1, Math.ceil((cardHeight + gapSize) / (rowSize + gapSize)));
+        card.style.gridRowEnd = `span ${span}`;
+      });
+    };
+
+    layout();
+    requestAnimationFrame(layout);
+    setTimeout(layout, 120);
+
+    const images = masonry.querySelectorAll("img");
+    images.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener("load", layout, { once: true });
+      }
+    });
+
+    const observer = new ResizeObserver(() => layout());
+    observer.observe(masonry);
+  };
+
+  bootMap();
+  initPhotoMasonry();
+</script>
+
+<style>
+  .photo-masonry {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+    align-items: start;
+    grid-auto-rows: 8px;
+    grid-auto-flow: row;
+  }
+
+  .photo-card {
+    margin: 0;
+  }
+
+  .photo-image {
+    width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(163, 163, 163, 0.25);
+  }
+
+  .photo-caption {
+    margin-top: 0;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    text-align: center;
+    font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+    color: rgb(92 92 92);
+    line-height: 1.25;
+  }
+
+  :global(.dark) .photo-caption {
+    color: rgb(176 176 176);
+  }
+
+  .photo-card.has-caption .photo-caption {
+    margin-top: 0.4rem;
+  }
+
+  @media (max-width: 960px) {
+    .photo-masonry {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .photo-masonry {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

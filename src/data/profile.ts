@@ -1,131 +1,75 @@
 export const PROFILE = {
   name: "Yunan Zhang",
   nativeName: "张宇楠",
-  title: "CS PhD Student",
   shortBio: "Ph.D. Student @ Purdue University",
-  affiliation: "Purdue University, West Lafayette",
-  location: "West Lafayette, IN",
   profileImage: {
-    src: "/astro-micro.jpg",
+    src: "/photo/yunan.jpg",
     alt: "Portrait photo",
   },
-  announcement:
-    "I am actively working on vector search and vector database systems, including filtered vector search and disk-based indexing.",
   intro: [
-    "I am a Ph.D. student in Computer Science at Purdue University, advised by Prof. Jianguo Wang.",
-    "My research focuses on vector search systems, including filtered vector search and disk-based indexing.",
-    "I am currently working on Filtered Vector Search on DiskANN with Microsoft Research and Purdue University.",
+    "Hi! This is Yunan, a Ph.D. student in Computer Science at Purdue University, advised by <a href=\"https://www.cs.purdue.edu/homes/csjgwang/\" target=\"_blank\" rel=\"noopener noreferrer\">Professor Jianguo Wang</a>. I came to Purdue University in 2021 as an M.S. student in Computer Science and transferred to the Ph.D. program in 2023. Previously, I received an M.S. in Computer Engineering from the <a href=\"https://www.iit.edu\" target=\"_blank\" rel=\"noopener noreferrer\">Illinois Institute of Technology</a> and a bachelor’s degree from <a href=\"https://en.szu.edu.cn\" target=\"_blank\" rel=\"noopener noreferrer\">Shenzhen University</a>.",
+    "I have worked as a Research Intern at <a href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\"><span aria-label=\"Microsoft Research\"><img src=\"/microsoft.svg\" alt=\"\" aria-hidden=\"true\" style=\"display:inline-block;width:0.95em;height:0.95em;vertical-align:-0.08em;margin-right:0.25em;\" />Microsoft Research</span></a> in the <a href=\"https://www.microsoft.com/en-us/research/project/project-akupara-approximate-nearest-neighbor-search-for-large-scale-semantic-search/\" target=\"_blank\" rel=\"noopener noreferrer\">DiskANN team</a>.",
+    "Please feel free to reach out if you're interested in discussing any research ideas, academic collaborations, or industry opportunities!"
   ],
-  // focusTags: [
-  //   "Vector Search",
-  //   "Vector Databases",
-  //   "DiskANN",
-  // ],
   newsItems: [
-    {
-      date: "Jun 2025 - Now",
-      text: "Working on filtered vector search strategy for DiskANN at Microsoft Research.",
-      tags: ["paper"],
+            {
+      date: "Nov. 2025",
+      text: "The paper \"Efficient Vector Index Merging in Vector Databases\" has been accepted in SIGMOD 2026.",
+      tags: ["publication"],
     },
-    {
-      date: "Jun 2024 - Now",
-      text: "DiskV: disk-based vector search on commodity storage (submitted to VLDB 2026 as first author).",
-      tags: ["project"],
+        {
+      date: "Oct. 2025",
+      text: "The paper \"Fast Vector Search in PostgreSQL: A Decoupled Approach\" has been accepted in CIDR 2026.",
+      tags: ["publication"],
     },
-    {
-      date: "Jun 2025 - Aug 2025",
-      text: "Research Scientist Intern, Microsoft Research (Azure DiskANN team).",
+        {
+      date: "June 2025",
+      text: "Excited to be joining <a href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Research</a> as a Research Scientist Intern on the Azure DiskANN team. I'll be working with <a class=\"person-link\" href=\"https://harsha-simhadri.org\" target=\"_blank\" rel=\"noopener noreferrer\">Harsha Vardhan Simhadri</a> on filtered vector search algorithms. Grateful for the opportunity!",
       tags: ["internship"],
     },
-    {
-      date: "2024",
-      text: "Published first-author work in ICDE 2024.",
+        {
+      date: "June 2024",
+      text: "The paper \"SingleStore-V: An Integrated Vector Database System in SingleStore\" has been accepted in VLDB 2024 industrial track.",
       tags: ["publication"],
+    },
+    {
+      date: "April 2024",
+      text: "The paper \"Are There Fundamental Limitations in Supporting Vector Data Management in Relational Databases? A Case Study of PostgreSQL\" has been accepted in ICDE 2024.",
+      tags: ["publication", "milestone"],
+    },
+        {
+      date: "May 2023",
+      text: "Started to work with Professor Jianguo Wang in vector search. Big thanks to this opportunity!",
+      tags: ["milestone"],
     },
   ],
   researchSummary:
-    "My research explores efficient and practical vector search systems across different storage devices and real-world workloads.",
+    "My research focuses on building efficient, high-performance <strong>vector search indexes and systems</strong> across diverse storage devices and real-world workloads. My research covers the following main areas:",
   researchThemes: [
+    {
+      title: "Vector Search on Databases",
+      description:
+        "Building and optimizing vector search integrated with databases, with a focus on implementation and performance analysis in PostgreSQL and other DBMSs across real-world workloads. <a href=\"https://www.cs.purdue.edu/homes/csjgwang/pubs/ICDE24_VecDB.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">ICDE'24</a>, <a href=\"https://cs.purdue.edu/homes/csjgwang/SingleStoreVec.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">VLDB'24</a>, <a href=\"https://cs.purdue.edu/homes/csjgwang/pubs/CIDR26_PostgreSQLVector.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">CIDR'26</a>.",
+    },
+        {
+      title: "Disk-Based Vector Search",
+      description:
+        "Designing and optimizing disk-based vector indexes for commodity storage (HDDs, SSDs, and cloud block storage), including segment-aware optimizations for LSM-style multi-segment systems.",
+    },
+
     {
       title: "Filtered Vector Search",
       description:
-        "Developing search strategies adaptable to varying query selectivities and predicate cardinalities in DiskANN.",
+        "Developing adaptive search strategies for graph-based vector indexes under diverse filtering conditions and query patterns (e.g., single vs. multiple filters and mixed filter types).",
     },
+
     {
-      title: "Disk-Based Vector Search Systems",
+      title: "Related Vector Search Algorithms",
       description:
-        "Designing and optimizing disk-based vector indices for high performance on commodity storage, including HDDs and SSDs.",
-    },
-    {
-      title: "Generalized vs. Specialized Vector Databases",
-      description:
-        "Analyzing index build/search tradeoffs and closing the performance gap between generalized and specialized vector databases.",
+        "Exploring related techniques for vector search, including merge strategies for graph-based indexes and applications in retrieval-augmented generation (RAG) for LLMs. <span class=\"research-linkish\">SIGMOD'26</span>",
     },
   ],
-  about: {
-    paragraphs: [
-      "I am a Ph.D. student in Computer Science at Purdue University. My research centers on vector search and vector database systems.",
-      "I received my M.S. in Computer Science from Purdue University (2021-2023), and I continue to work on practical and scalable search systems for real-world deployments.",
-    ],
-    photos: [
-      {
-        src: "/astro-nano.png",
-        alt: "Personal photo 1",
-        caption: "Replace this with a personal photo and caption.",
-        width: 350,
-        height: 250,
-        className:
-          "bg-neutral-300 w-[350px] h-[250px] object-cover rounded-xl -rotate-6 overflow-hidden",
-      },
-      {
-        src: "/astro-micro.jpg",
-        alt: "Personal photo 2",
-        caption: "Optional second photo.",
-        width: 150,
-        height: 250,
-        className:
-          "bg-neutral-300 w-[150px] h-[250px] object-cover rounded-xl rotate-6 mx-auto sm:ml-auto",
-      },
-    ],
-  },
-  cv: {
-    works: [
-      {
-        company: "Microsoft Research",
-        time: "Jun 2025 - Aug 2025",
-        job_title: "Research Scientist Intern",
-        location: "Redmond, WA",
-        description:
-          "Interned on the Azure DiskANN team. Built a filtered vector search strategy for DiskANN and created an internal dataset for filtered vector search.",
-      },
-      {
-        company: "Purdue University",
-        time: "Jun 2024 - Now",
-        job_title: "Research Project: DiskV",
-        location: "West Lafayette, IN",
-        description:
-          "Developing disk-based vector search on commodity storage. DiskV outperforms multiple disk-based vector databases with strong build/search efficiency.",
-      },
-    ],
-    educations: [
-      {
-        school: "Purdue University",
-        time: "Aug 2023 - 2027 (Expected)",
-        job_title: "PhD in Computer Science",
-        location: "West Lafayette, IN",
-        description: "Advisor: Prof. Jianguo Wang.",
-      },
-      {
-        school: "Purdue University",
-        time: "Jun 2021 - May 2023",
-        job_title: "M.S. in Computer Science",
-        location: "West Lafayette, IN",
-        description: "",
-      },
-    ],
-  },
   socialLinks: {
-    x: "#",
     github: "https://github.com/YunanZzz",
     linkedin: "https://www.linkedin.com/in/yunan-zhang-641351183/",
     email: "mailto:zhan4404@purdue.edu",

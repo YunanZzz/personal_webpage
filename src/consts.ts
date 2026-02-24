@@ -20,13 +20,3 @@ export const RESEARCH: Metadata = {
   DESCRIPTION:
     "A collection of my publications with links to paper, repositories and live demos.",
 };
-
-export const CV: Metadata = {
-  TITLE: "CV",
-  DESCRIPTION: "Education and experience.",
-};
-
-export const ABOUT: Metadata = {
-  TITLE: "ABOUT",
-  DESCRIPTION: "Background and interests.",
-};
