@@ -8,10 +8,15 @@ export const PROFILE = {
   },
   intro: [
     "Hi! This is Yunan, a Ph.D. student in Computer Science at Purdue University, advised by <a href=\"https://www.cs.purdue.edu/homes/csjgwang/\" target=\"_blank\" rel=\"noopener noreferrer\">Professor Jianguo Wang</a>. I came to Purdue University in 2021 as an M.S. student in Computer Science and transferred to the Ph.D. program in 2023. Previously, I received an M.S. in Computer Engineering from the <a href=\"https://www.iit.edu\" target=\"_blank\" rel=\"noopener noreferrer\">Illinois Institute of Technology</a> and a bachelor’s degree from <a href=\"https://en.szu.edu.cn\" target=\"_blank\" rel=\"noopener noreferrer\">Shenzhen University</a>.",
-    "I have worked as a Research Intern at <a href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\"><span aria-label=\"Microsoft Research\"><img src=\"/microsoft.svg\" alt=\"\" aria-hidden=\"true\" style=\"display:inline-block;width:0.95em;height:0.95em;vertical-align:-0.08em;margin-right:0.25em;\" />Microsoft Research</span></a> in the <a href=\"https://www.microsoft.com/en-us/research/project/project-akupara-approximate-nearest-neighbor-search-for-large-scale-semantic-search/\" target=\"_blank\" rel=\"noopener noreferrer\">DiskANN team</a>.",
+    "I have worked as a Research Intern at <a href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\"><span aria-label=\"Microsoft Research\"><img src=\"/microsoft.svg\" alt=\"\" aria-hidden=\"true\" style=\"display:inline-block;width:0.95em;height:0.95em;vertical-align:-0.08em;margin-right:0.25em;\" />Microsoft Research</span></a> in the <a href=\"https://www.microsoft.com/en-us/research/project/project-akupara-approximate-nearest-neighbor-search-for-large-scale-semantic-search/\" target=\"_blank\" rel=\"noopener noreferrer\">DiskANN team</a> and will be joining <span aria-label=\"Google\"><img src=\"/google.svg\" alt=\"\" aria-hidden=\"true\" style=\"display:inline-block;width:0.95em;height:0.95em;vertical-align:-0.08em;margin-right:0.25em;\" />Google</span> as a SWE Intern in Summer 2026.",
     "Please feel free to reach out if you're interested in discussing any research ideas, academic collaborations, or industry opportunities!"
   ],
   newsItems: [
+                {
+      date: "Apr. 2026",
+                  text: "I am excited to share that this summer I will be joining the <a href=\"https://cloud.google.com/products/alloydb\" target=\"_blank\" rel=\"noopener noreferrer\">AlloyDB</a> team at Google as a Software Engineering Intern, focusing on <a href=\"https://docs.cloud.google.com/alloydb/docs/ai/perform-vector-search\" target=\"_blank\" rel=\"noopener noreferrer\">vector search</a>.",
+      tags: ["internship"],
+    },
             {
       date: "Nov. 2025",
       text: "The paper \"Efficient Vector Index Merging in Vector Databases\" has been accepted in SIGMOD 2026.",
