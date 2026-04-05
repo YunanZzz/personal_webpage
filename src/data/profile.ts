@@ -14,7 +14,7 @@ export const PROFILE = {
   newsItems: [
                 {
       date: "Apr. 2026",
-                  text: "I am excited to share that this summer I will be joining the <a href=\"https://cloud.google.com/products/alloydb\" target=\"_blank\" rel=\"noopener noreferrer\">AlloyDB</a> team at Google as a Software Engineering Intern, focusing on <a href=\"https://docs.cloud.google.com/alloydb/docs/ai/perform-vector-search\" target=\"_blank\" rel=\"noopener noreferrer\">vector search</a>.",
+                  text: "I am excited to share that this summer I will be joining the <a class=\"person-link\" href=\"https://cloud.google.com/products/alloydb\" target=\"_blank\" rel=\"noopener noreferrer\">AlloyDB</a> team at Google as a Software Engineering Intern, focusing on <a class=\"person-link\" href=\"https://docs.cloud.google.com/alloydb/docs/ai/perform-vector-search\" target=\"_blank\" rel=\"noopener noreferrer\">vector search</a>.",
       tags: ["internship"],
     },
             {
@@ -29,7 +29,7 @@ export const PROFILE = {
     },
         {
       date: "June 2025",
-      text: "Excited to be joining <a href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Research</a> as a Research Scientist Intern on the Azure DiskANN team. I'll be working with <a class=\"person-link\" href=\"https://harsha-simhadri.org\" target=\"_blank\" rel=\"noopener noreferrer\">Harsha Vardhan Simhadri</a> on filtered vector search algorithms. Grateful for the opportunity!",
+      text: "Excited to be joining <a class=\"person-link\" href=\"https://www.microsoft.com/en-us/research/\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Research</a> as a Research Scientist Intern on the Azure DiskANN team. I'll be working with <a class=\"person-link\" href=\"https://harsha-simhadri.org\" target=\"_blank\" rel=\"noopener noreferrer\">Harsha Vardhan Simhadri</a> on filtered vector search algorithms. Grateful for the opportunity!",
       tags: ["internship"],
     },
         {
