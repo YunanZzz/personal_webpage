@@ -1,8 +1,8 @@
 import type { Metadata, Site } from "@types";
 
 export const SITE: Site = {
-  TITLE: "Yunan Zhang | CS PhD Student",
-  DESCRIPTION: "Personal academic website of a Computer Science PhD student.",
+  TITLE: "Yunan Zhang | CS Ph.D. Candidate at Purdue University",
+  DESCRIPTION: "Personal website of a Computer Science Ph.D. candidate at Purdue University.",
   EMAIL: "zhan4404@purdue.edu",
   NUM_PUBLICATIONS_ON_HOMEPAGE: 5,
   SITEURL: "https://your-domain.com", // Update to your production domain for RSS and SEO.
