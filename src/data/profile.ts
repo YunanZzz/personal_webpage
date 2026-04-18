@@ -76,7 +76,7 @@ export const PROFILE = {
     {
       title: "Related Vector Search Algorithms",
       description:
-        "Exploring related techniques for vector search, including merge strategies for graph-based indexes and applications in retrieval-augmented generation (RAG) for LLMs. <span class=\"research-linkish\">SIGMOD'26</span>",
+        "Exploring related techniques for vector search, including merge strategies for graph-based indexes and applications in retrieval-augmented generation (RAG) for LLMs. <a class=\"research-linkish\" href=\"https://dl.acm.org/doi/pdf/10.1145/3786645\" target=\"_blank\" rel=\"noopener noreferrer\">SIGMOD'26</a>",
     },
   ],
   socialLinks: {
