@@ -64,7 +64,7 @@ export const PROFILE = {
         {
       title: "Disk-Based Vector Search",
       description:
-        "Designing and optimizing disk-based vector indexes for commodity storage (HDDs, SSDs, and cloud block storage), including segment-aware optimizations for LSM-style multi-segment systems.",
+        "Designing and optimizing disk-based vector indexes, including segment-aware optimizations for LSM-style multi-segment systems.",
     },
 
     {
