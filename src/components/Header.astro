@@ -14,7 +14,6 @@ const navItems = [
   { href: withBase("#research"), label: "research" },
   { href: withBase("#news"), label: "news" },
   { href: withBase("#publications"), label: "publications" },
-  { href: withBase("resume.pdf"), label: "cv", external: true },
 ];
 
 const isActive = (href: string) => {
@@ -34,7 +33,7 @@ const isLifeActive = pathname === lifePath || pathname.startsWith(`${lifePath}/`
       <nav class="flex items-center justify-center gap-4 text-sm md:gap-7">
         {
           navItems.map((item) => (
-            <Link href={item.href} underline={false} external={item.external}>
+            <Link href={item.href} underline={false}>
               <span
                 class:list={[
                   "font-mono lowercase tracking-wide transition-colors duration-200",
@@ -48,6 +47,7 @@ const isLifeActive = pathname === lifePath || pathname.startsWith(`${lifePath}/`
             </Link>
           ))
         }
+        <span class="font-mono lowercase tracking-wide text-neutral-600 dark:text-neutral-300">cv</span>
       </nav>
 
       <div class="absolute right-0 top-1/2 -translate-y-1/2">
